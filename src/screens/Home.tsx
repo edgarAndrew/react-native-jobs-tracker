@@ -51,14 +51,14 @@ export default function Home({navigation}:HomeProps) {
     <View style={styles.screenContainer}>
       <Header/>
       <AddJob/>
-      <View>
+      <View style={{flex:1}}>
         {jobs.length==0 && <Text style={styles.emptyText}>No jobs being tracked</Text>}
         <FlatList 
           data={jobs}
           keyExtractor={item => item._id}
           renderItem={({item})=>(
             <JobCard {...item}/>
-          )}  
+          )}
         />
       </View>
     </View>
