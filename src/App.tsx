@@ -16,8 +16,7 @@ export type RootStackParamList = {
   Home: undefined,
   Job:{job:Job},
   Login:undefined,
-  Register:undefined,
-  Dummy:undefined,
+  Register:undefined
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -28,9 +27,9 @@ function App(): React.JSX.Element {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Login'>
-          <Stack.Screen name='Login' component={Login} options={{title:"Login"}}/>
-          <Stack.Screen name='Register' component={Register} options={{title:"Register"}}/>
-          <Stack.Screen name='Home' component={Home} options={{title:"My Jobs"}}/>
+          <Stack.Screen name='Login' component={Login} options={{title:"Login",headerShown:false}}/>
+          <Stack.Screen name='Register' component={Register} options={{title:"Register",headerShown:false}}/>
+          <Stack.Screen name='Home' component={Home} options={{title:"My Jobs",headerShown:false}}/>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

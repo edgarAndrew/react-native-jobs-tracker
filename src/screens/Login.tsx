@@ -37,12 +37,13 @@ const Login = ({navigation}: LoginProps) => {
 
   useEffect(()=>{
     if(isAuthenticated){
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        })
-      );
+      // navigation.dispatch(
+      //   CommonActions.reset({
+      //     index: 0,
+      //     routes: [{ name: 'Home' }],
+      //   })
+      // );
+      navigation.navigate("Home")
     }
     if(error !== ''){
       Snackbar.show({

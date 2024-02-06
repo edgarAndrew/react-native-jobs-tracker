@@ -59,7 +59,7 @@ export default function JobCard(props:JobCardProps):JSX.Element {
 
   return (
     <View style={styles.container}>
-         <Modal isVisible={isDeleteModalVisible} animationInTiming={500} animationOutTiming={500} animationIn={"bounceInUp"} animationOut={"bounceOutDown"}>
+        <Modal isVisible={isDeleteModalVisible} animationInTiming={500} animationOutTiming={500} animationIn={"bounceInUp"} animationOut={"bounceOutDown"}>
             <View style={styles.modal}>
                 <Text style={styles.confirmText}>Are you sure ?</Text>
                 <View style={styles.cont2}>

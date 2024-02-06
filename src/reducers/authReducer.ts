@@ -63,12 +63,16 @@ export const authSlice = createSlice({
       state.error = action.payload
     },
 
+    logout: (state) => {
+      state.isAuthenticated = false
+    },
+
   },
 })
 
 // Action creators are generated for each case reducer function
 export const { loginRequest,loginSuccess,loginFailure,
   loadUserRequest,loadUserSuccess,registerRequest,
-  registerSuccess,registerFailure,loadUserFailure } = authSlice.actions
+  registerSuccess,registerFailure,loadUserFailure,logout } = authSlice.actions
 
 export default authSlice.reducer

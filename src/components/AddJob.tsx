@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
       paddingVertical: 10,
       paddingHorizontal: 12,
       width:350,
-      marginTop:50,
+      marginTop:20,
     },
     appButtonText: {
       fontSize: 16,

@@ -5,13 +5,19 @@ import '../axios'
 import { useDispatch,useSelector } from 'react-redux';
 import { getAllJobsFailure, getAllJobsRequest, getAllJobsSuccess } from '../reducers/jobReducer';
 import { RootState } from '../store';
+import {RootStackParamList} from '../App'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import AddJob from '../components/AddJob';
 import JobCard from '../components/JobCard';
 import Loader from '../components/Loader';
+import Header from '../components/Header';
 
-export default function Home() {
+type HomeProps = NativeStackScreenProps<RootStackParamList,'Home'>
+
+export default function Home({navigation}:HomeProps) {
   const dispatch = useDispatch()
   const {isLoading,error,jobs,message} = useSelector((state: RootState) => state.jobs)
+  const {isAuthenticated} = useSelector((state: RootState) => state.auth)
 
   const getJobs = async()=>{
     try{
@@ -32,11 +38,18 @@ export default function Home() {
     getJobs()
   },[])
 
+  useEffect(()=>{
+    if(!isAuthenticated){
+      navigation.navigate("Login")
+    }
+  },[isAuthenticated])
+
   if(isLoading)
     return <Loader loaderText='Fetching jobs'/>
   else
     return (
     <View style={styles.screenContainer}>
+      <Header/>
       <AddJob/>
       <View>
         {jobs.length==0 && <Text style={styles.emptyText}>No jobs being tracked</Text>}
@@ -57,7 +70,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems:'center',
-    padding: 16,
+    // padding: 16,
+    // paddingVertical:16,
     backgroundColor:"#e6ffe6"
   },
   emptyText:{
