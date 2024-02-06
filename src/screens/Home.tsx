@@ -6,9 +6,8 @@ import { useDispatch,useSelector } from 'react-redux';
 import { getAllJobsFailure, getAllJobsRequest, getAllJobsSuccess } from '../reducers/jobReducer';
 import { RootState } from '../store';
 import AddJob from '../components/AddJob';
-import Snackbar from 'react-native-snackbar';
-import { DATA } from '../constants';
 import JobCard from '../components/JobCard';
+import Loader from '../components/Loader';
 
 export default function Home() {
   const dispatch = useDispatch()
@@ -21,9 +20,10 @@ export default function Home() {
         dispatch(getAllJobsSuccess(data.jobs))
     }catch(error){
       if(isAxiosError(error)){
-        dispatch(getAllJobsFailure(error.message))
-      }else{
-        dispatch(getAllJobsFailure("Something went wrong"))
+        if(error.response?.data.message)
+          dispatch(getAllJobsFailure(error.response?.data.message))
+        else
+          dispatch(getAllJobsFailure(error.message))
       }
     }
   }
@@ -32,26 +32,14 @@ export default function Home() {
     getJobs()
   },[])
 
-  useEffect(()=>{
-    if(error !== ''){
-      Snackbar.show({
-        text: error,
-        duration: Snackbar.LENGTH_SHORT
-      })
-    }
-    if(message){
-      Snackbar.show({
-        text: message,
-        duration: Snackbar.LENGTH_LONG
-      })
-      getJobs()
-    }
-  },[error,message])
-
-  return (
+  if(isLoading)
+    return <Loader loaderText='Fetching jobs'/>
+  else
+    return (
     <View style={styles.screenContainer}>
       <AddJob/>
       <View>
+        {jobs.length==0 && <Text style={styles.emptyText}>No jobs being tracked</Text>}
         <FlatList 
           data={jobs}
           keyExtractor={item => item._id}
@@ -71,5 +59,11 @@ const styles = StyleSheet.create({
     alignItems:'center',
     padding: 16,
     backgroundColor:"#e6ffe6"
+  },
+  emptyText:{
+    color:'#000',
+    fontSize:26,
+    marginTop:20,
+    fontWeight:"bold"
   }
 });

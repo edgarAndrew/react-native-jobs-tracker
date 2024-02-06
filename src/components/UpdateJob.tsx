@@ -1,9 +1,10 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { PropsWithChildren,useState } from 'react'
-import { updateJobRequest,updateJobSuccess,updateJobFailure} from '../reducers/jobReducer';
+import { updateJobRequest,updateJobSuccess,updateJobFailure,getAllJobsRequest,getAllJobsSuccess,getAllJobsFailure} from '../reducers/jobReducer';
 import { useDispatch,useSelector } from 'react-redux';
 import axios,{isAxiosError} from "axios";
 import '../axios'
+import { Dropdown } from 'react-native-element-dropdown';
 import Snackbar from 'react-native-snackbar';
 
 
@@ -12,11 +13,33 @@ type UpdateJobProps = PropsWithChildren<{
     item:Job
 }>
 
+const dropdown_options = [
+    { label: 'Pending', value: 'pending' },
+    { label: 'Interview', value: 'interview' },
+    { label: 'Declined', value: 'declined' }
+];
+
 export default function UpdateJob(props:UpdateJobProps) {
     const [company,setCompany] = useState(props.item.company)
     const [status,setStatus] = useState(props.item.status)
     const [position,setPosition] = useState(props.item.position)
+    
     const dispatch = useDispatch()
+
+    const getJobs = async()=>{
+        try{
+            dispatch(getAllJobsRequest())
+            const {data} = await axios.get("/jobs")
+            dispatch(getAllJobsSuccess(data.jobs))
+        }catch(error){
+          if(isAxiosError(error)){
+            if(error.response?.data.message)
+              dispatch(getAllJobsFailure(error.response?.data.message))
+            else
+              dispatch(getAllJobsFailure(error.message))
+          }
+        }
+    }
 
     const handleUpdate = async () =>{
         props.toggleUpdateModal()
@@ -24,12 +47,22 @@ export default function UpdateJob(props:UpdateJobProps) {
         try{
             const { data } = await axios.patch(`/jobs/${props.item._id}`, {company,position,status})
             dispatch(updateJobSuccess("Job has been updated"))
+            Snackbar.show({
+                text:"Job has been updated",
+                duration:Snackbar.LENGTH_SHORT
+            })
+            getJobs()
           }catch(error){
             if(isAxiosError(error)){
-                console.log(error)
-              dispatch(updateJobFailure(error.message))
-            }else{
-              dispatch(updateJobFailure("Something went wrong"))
+              if(error.response?.data){
+                dispatch(updateJobFailure(error.response?.data))
+                Snackbar.show({
+                    text:error.response?.data,
+                    duration:Snackbar.LENGTH_SHORT
+                })
+              }
+            else
+                dispatch(updateJobFailure(error.message))
             }
           }
     }
@@ -43,7 +76,7 @@ export default function UpdateJob(props:UpdateJobProps) {
                 <Text style={styles.grayText}>Company : </Text>
                 <TextInput
                     value={company}
-                    style={styles.text}
+                    style={styles.input}
                     onChangeText={text=>setCompany(text)}
                 />
             </View>
@@ -51,17 +84,25 @@ export default function UpdateJob(props:UpdateJobProps) {
                 <Text style={styles.grayText}>Position   : </Text>
                 <TextInput
                     value={position}
-                    style={styles.text}
+                    style={styles.input}
                     onChangeText={text => setPosition(text)}
                 />
             </View>
             <View style={styles.cont3}>
                 <Text style={styles.grayText}>Status      : </Text>
-                <TextInput
+                <Dropdown
+                    style={{...styles.input,paddingVertical:4}}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    containerStyle={{backgroundColor:"#fff",borderRadius:4}}
+                    itemTextStyle={{fontSize:18,color:"#000"}}
+                    data={dropdown_options}
+                    labelField="label"
+                    valueField="value"
                     value={status}
-                    style={styles.text}
-                    onChangeText={text=>setStatus(text)}
-                />
+                    onChange={item => {
+                        setStatus(item.value);
+                    }}
+                 />
             </View>
         </View>
         <TouchableOpacity onPress={handleUpdate}>
@@ -76,7 +117,7 @@ const styles = StyleSheet.create({
         alignItems:'center',
         justifyContent:'center',
         alignSelf:'center',
-        height:400,
+        height:450,
         width:350,
         backgroundColor:"#ecffcc",
         borderRadius:6
@@ -90,31 +131,38 @@ const styles = StyleSheet.create({
         marginTop:22
     },
     cont2:{
-        // flexDirection:"row",
-        // justifyContent:"space-between",
-        marginVertical:5
+        marginVertical:18
     },
     cont3:{
         flexDirection:"row",
-        justifyContent:"flex-start",
-        marginVertical:16,
+        justifyContent:"center",
+        alignItems:"center",
+        marginVertical:15,
         width:300,
-        columnGap:40
+        columnGap:15
     },
     grayText:{
         fontSize:20,
         color:"#006600",
     },
-    text:{
+    input: {
+        elevation: 3,
+        backgroundColor: "#fff",
+        borderRadius: 5,
+        paddingVertical: 7,
+        paddingHorizontal: 15,
+        width:190,
         fontSize:20,
-        color:"#000",
-        // textTransform:'capitalize'
-        backgroundColor:'#fff',
+        color:'#000'
     },
     headingText:{
-        fontSize:26,
+        fontSize:28,
         fontWeight:"bold",
         color:'#000',
         marginBottom:10,
+    },
+    selectedTextStyle: {
+        fontSize: 20,
+        color:"#000"
     }
 })

@@ -1,30 +1,88 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet} from 'react-native';
-
+import React, { useState,useEffect } from 'react';
+import { View, TextInput, Button, StyleSheet,TouchableOpacity,Text} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import {RootStackParamList} from '../App'
+import { useDispatch,useSelector } from 'react-redux'
+import { CommonActions } from '@react-navigation/native';
+import { RootState } from '../store';
+import { registerRequest,registerSuccess,registerFailure } from '../reducers/authReducer';
+import axios,{isAxiosError} from "axios";
+import '../axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Snackbar from 'react-native-snackbar';
 
 type RegisterProps = NativeStackScreenProps<RootStackParamList,'Register'>
 
 const Register = ({navigation}:RegisterProps) => {
-  const [username, setUsername] = useState('');
+  const [name, setUsername] = useState('');
   const [email, setemail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleRegister = () => {
-    console.log(username,email,password,confirmPassword)
+  const {isLoading,error,isAuthenticated} = useSelector((state: RootState) => state.auth)
+  const dispatch = useDispatch()
+
+  useEffect(()=>{
+    if(isAuthenticated){
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        })
+      );
+    }
+    if(error !== ''){
+      Snackbar.show({
+        text: error,
+        duration: Snackbar.LENGTH_SHORT
+      })
+    }
+  },[isAuthenticated,error])
+
+  const handleRegister = async() => {
+    if(!password || !confirmPassword || !email || !name){
+      Snackbar.show({
+        text: "Fill all the fields !",
+        duration: Snackbar.LENGTH_SHORT,
+      })
+      return
+    }
+    if(password !== confirmPassword){
+      Snackbar.show({
+        text: "Password does not match",
+        duration: Snackbar.LENGTH_SHORT
+      })
+      return
+    }
+
+    dispatch(registerRequest())
+    try{
+      const {data} = await axios.post("/auth/register",{name,email,password})
+      AsyncStorage.setItem("token",data.token)
+      AsyncStorage.setItem("user",data.user.name)
+      dispatch(registerSuccess())
+    }
+    catch(error){
+      if(isAxiosError(error)){
+        if(error.response?.data.message)
+          dispatch(registerFailure(error.response?.data.message))
+        else
+          dispatch(registerFailure(error.message))
+      }
+    }
   };
 
   return (
     <View style={styles.container}>
         <View style={styles.cont}>
+          <Text style={styles.headerText}>Job Tracker</Text>
+          <View style={styles.cont2}>
             <TextInput
                 style={styles.input}
-                placeholder="Name"
+                placeholder="Username"
                 placeholderTextColor="#000"
                 onChangeText={text => setUsername(text)}
-                value={username}
+                value={name}
             />
             <TextInput
                 style={styles.input}
@@ -49,8 +107,18 @@ const Register = ({navigation}:RegisterProps) => {
                 value={confirmPassword}
                 secureTextEntry
             />
-            <Button title="Register" onPress={handleRegister} />
-            <Button title="Already have an account ?" onPress={()=>{navigation.goBack()}} />
+          </View>
+          <View style={styles.cont2}>
+            <TouchableOpacity onPress={handleRegister} disabled={isLoading} style={styles.appButtonContainer}>
+                <Text style={styles.btnText}>Register</Text>
+            </TouchableOpacity>
+            <View style={styles.cont3}>
+                <Text style={styles.blackText}>Already have an account? </Text>
+                <TouchableOpacity onPress={()=>{navigation.goBack()}} disabled={isLoading}>
+                  <Text style={styles.greenText}>Login</Text>
+                </TouchableOpacity>
+            </View>
+          </View>
         </View>
     </View>
   );
@@ -61,27 +129,71 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20
+    backgroundColor:"#f6ffe6"
   },
   cont:{
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:"#ffffab",
-    width:300,
-    height:400,
-    padding:8,
-    borderRadius:10
+    width:350,
+    height:620,
+    elevation: 6,
+    backgroundColor: "#ccffcc",
+    borderRadius: 6,
+    paddingHorizontal: 15,
+  },
+  cont2:{
+    rowGap:15,
+    marginVertical:25
+  },
+  cont3:{
+    flexDirection:"row"
   },
   input: {
-    width: '100%',
-    marginBottom: 20,
-    marginLeft:5,
-    marginRight:5,
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    color:"#000"
+    elevation: 3,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    width:280,
+    marginVertical:5,
+    fontSize:20,
+    color:'#000'
   },
+  appButtonContainer: {
+    elevation: 7,
+    backgroundColor: "#009688",
+    borderRadius: 19,
+    paddingVertical: 6,
+    paddingHorizontal: 5,
+    width:170,
+    marginVertical:5,
+    alignSelf:"center",
+    marginBottom:30
+  },
+  btnText:{
+      fontSize:18,
+      fontWeight:"600",
+      textTransform:"uppercase",
+      color:'#fff',
+      alignSelf:"center",
+      paddingVertical:3
+  },
+  headerText:{
+    fontSize:34,
+    fontWeight:"bold",
+    color:"#009688",
+    marginBottom:20
+  },
+  greenText:{
+    fontSize:18,
+      fontWeight:"600",
+      textTransform:"uppercase",
+      color:'#009688'
+  },
+  blackText:{
+    fontSize:18,
+    color:'#000'
+  }
 });
 
 export default Register;

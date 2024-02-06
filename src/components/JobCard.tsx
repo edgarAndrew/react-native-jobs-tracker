@@ -2,10 +2,11 @@ import { Pressable, StyleSheet, Text, View,TouchableOpacity, Image,Button } from
 import React, { PropsWithChildren,useState } from 'react'
 import Modal from "react-native-modal";
 import UpdateJob from './UpdateJob';
-import { deleteJobFailure, deleteJobRequest, deleteJobSuccess } from '../reducers/jobReducer';
-import { useDispatch } from 'react-redux';
+import { deleteJobFailure, deleteJobRequest, deleteJobSuccess,getAllJobsRequest,getAllJobsSuccess,getAllJobsFailure } from '../reducers/jobReducer';
+import { useDispatch} from 'react-redux';
 import axios,{isAxiosError} from "axios";
 import '../axios'
+import Snackbar from 'react-native-snackbar';
 
 type JobCardProps = PropsWithChildren<Job>
 
@@ -13,6 +14,21 @@ export default function JobCard(props:JobCardProps):JSX.Element {
    const [isUpdateModalVisible, setUpdateModalVisible] = useState(false);
    const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
    const dispatch = useDispatch()
+
+   const getJobs = async()=>{
+    try{
+        dispatch(getAllJobsRequest())
+        const {data} = await axios.get("/jobs")
+        dispatch(getAllJobsSuccess(data.jobs))
+    }catch(error){
+      if(isAxiosError(error)){
+        if(error.response?.data.message)
+          dispatch(getAllJobsFailure(error.response?.data.message))
+        else
+          dispatch(getAllJobsFailure(error.message))
+      }
+    }
+    }
    
    const toggleUpdateModal = () => {
         setUpdateModalVisible(!isUpdateModalVisible);
@@ -27,9 +43,13 @@ export default function JobCard(props:JobCardProps):JSX.Element {
         try{
             const { data } = await axios.delete(`/jobs/${id}`)
             dispatch(deleteJobSuccess("Job has been deleted"))
+            Snackbar.show({
+                text:"Job has been deleted",
+                duration:Snackbar.LENGTH_SHORT
+            })
+            getJobs()
           }catch(error){
             if(isAxiosError(error)){
-                console.log(error)
               dispatch(deleteJobFailure(error.message))
             }else{
               dispatch(deleteJobFailure("Something went wrong"))
@@ -71,7 +91,7 @@ export default function JobCard(props:JobCardProps):JSX.Element {
         <View style={styles.cont2}>
             <View style={styles.cont3}>
                 <Text style={styles.greyText}>Created : </Text>
-                <Text style={styles.dateText}>{props.createdAt.substring(0,10)}</Text>
+                <Text style={styles.dateText}>{props.createdAt.substring(0,10).split('-').reverse().join('/')}</Text>
             </View>
         </View>
         <View style={styles.cont2}>
@@ -81,7 +101,7 @@ export default function JobCard(props:JobCardProps):JSX.Element {
             </View>
             <View style={styles.cont3}>
                 <Text style={styles.greyText}>Updated: </Text>
-                <Text style={styles.dateText}>{props.updatedAt.substring(0,10)}</Text>
+                <Text style={styles.dateText}>{props.updatedAt.substring(0,10).split('-').reverse().join('/')}</Text>
             </View>
         </View>
     </View>

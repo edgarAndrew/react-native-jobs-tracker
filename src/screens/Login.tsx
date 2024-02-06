@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text} from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { CommonActions } from '@react-navigation/native';
 import {RootStackParamList} from '../App'
 import { useDispatch,useSelector } from 'react-redux'
 import { RootState } from '../store';
-import { loginRequest,loginSuccess,loginFailure } from '../reducers/authReducer';
+import { loginRequest,loginSuccess,loginFailure, loadUserSuccess, loadUserRequest, loadUserFailure } from '../reducers/authReducer';
 import axios,{isAxiosError} from "axios";
 import '../axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
+import Loader from '../components/Loader';
 
 type LoginProps = NativeStackScreenProps<RootStackParamList,'Login'>
 
@@ -18,7 +19,21 @@ const Login = ({navigation}: LoginProps) => {
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   
-  const {isAuthenticated,isLoading,error,user} = useSelector((state: RootState) => state.auth)
+  const {isAuthenticated,isLoading,error} = useSelector((state: RootState) => state.auth)
+
+  const checkJWTToken = async() =>{
+    try{
+      dispatch(loadUserRequest())
+      const {data} = await axios.get("/jobs")
+      dispatch(loadUserSuccess())
+    }catch(error){
+      dispatch(loadUserFailure("JWT token missing/expired , please login"))
+    }
+  }
+
+  useEffect(()=>{
+    checkJWTToken()
+  },[])
 
   useEffect(()=>{
     if(isAuthenticated){
@@ -42,39 +57,52 @@ const Login = ({navigation}: LoginProps) => {
     try{
       const { data } = await axios.post(`/auth/login`, {email,password})
       AsyncStorage.setItem("token",data.token)
-      dispatch(loginSuccess(data.user.name))
+      AsyncStorage.setItem("user",data.user.name)
+      dispatch(loginSuccess())
       
     }catch(error){
       if(isAxiosError(error)){
-        dispatch(loginFailure(error.message))
-      }else{
-        dispatch(loginFailure("Something went wrong"))
+        if(error.response?.data.message)
+          dispatch(loginFailure(error.response?.data.message))
+        else
+          dispatch(loginFailure(error.message))
       }
-     
     }
   };
-
-  return (
+  if(isLoading)
+    return <Loader loaderText='Authenticating'/>
+  else
+    return (
     <View style={styles.container}>
         <View style={styles.cont}>
-                <TextInput
-                style={styles.input}
-                placeholder="Email..."
-                placeholderTextColor="#000"
-                onChangeText={text => setemail(text)}
-                value={email}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#000"
-                onChangeText={text => setPassword(text)}
-                value={password}
-                secureTextEntry
-            />
+          <Text style={styles.headerText}>Job Tracker</Text>
             <View style={styles.cont2}>
-              <Button title="Login" onPress={handleLogin} disabled={isLoading}/>
-              <Button title="Register" onPress={()=>{navigation.navigate("Register")}} />
+              <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#000"
+                  onChangeText={text => setemail(text)}
+                  value={email}
+              />
+              <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#000"
+                  onChangeText={text => setPassword(text)}
+                  value={password}
+                  secureTextEntry
+              />
+            </View> 
+            <View style={styles.cont2}>
+              <TouchableOpacity onPress={handleLogin} disabled={isLoading} style={styles.appButtonContainer}>
+                <Text style={styles.btnText}>Login</Text>
+              </TouchableOpacity>
+              <View style={styles.cont3}>
+                <Text style={styles.blackText}>No Account yet ? </Text>
+                <TouchableOpacity onPress={()=>{navigation.navigate("Register")}} disabled={isLoading}>
+                  <Text style={styles.greenText}>Register</Text>
+                </TouchableOpacity>
+              </View>
             </View>
         </View>
     </View>
@@ -86,30 +114,71 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20
+    backgroundColor:"#f6ffe6"
   },
   cont:{
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:"#ffffab",
-    width:300,
-    height:400,
-    padding:20,
-    borderRadius:10
+    width:350,
+    height:500,
+    elevation: 6,
+    backgroundColor: "#ccffcc",
+    borderRadius: 6,
+    paddingHorizontal: 15,
   },
   cont2:{
     rowGap:15,
-    marginTop:25,
+    marginVertical:25
+  },
+  cont3:{
+    flexDirection:"row"
   },
   input: {
-    width: '100%',
-    marginBottom: 20,
-    marginLeft:5,
-    marginRight:5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    color:"#000"
+    elevation: 3,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    width:280,
+    marginVertical:5,
+    fontSize:20,
+    color:'#000'
   },
+  appButtonContainer: {
+    elevation: 7,
+    backgroundColor: "#009688",
+    borderRadius: 19,
+    paddingVertical: 6,
+    paddingHorizontal: 5,
+    width:170,
+    marginVertical:5,
+    alignSelf:"center",
+    marginBottom:30
+  },
+  btnText:{
+      fontSize:18,
+      fontWeight:"600",
+      textTransform:"uppercase",
+      color:'#fff',
+      alignSelf:"center",
+      paddingVertical:3
+  },
+  headerText:{
+    fontSize:34,
+    fontWeight:"bold",
+    color:"#009688",
+    marginBottom:20
+  },
+  greenText:{
+    fontSize:18,
+      fontWeight:"600",
+      textTransform:"uppercase",
+      color:'#009688'
+  },
+  blackText:{
+    fontSize:18,
+    color:'#000'
+  }
 });
 
 export default Login;

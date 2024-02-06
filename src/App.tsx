@@ -6,8 +6,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './screens/Home';
 import Login from './screens/Login';
 import Register from './screens/Register';
-import Job from './screens/Job';
-import Dummy from './screens/Dummy';
 
 // redux
 import { store } from './store';
@@ -30,11 +28,9 @@ function App(): React.JSX.Element {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Login'>
-          <Stack.Screen name='Dummy' component={Dummy} options={{title:"Dummy"}}/>
           <Stack.Screen name='Login' component={Login} options={{title:"Login"}}/>
           <Stack.Screen name='Register' component={Register} options={{title:"Register"}}/>
           <Stack.Screen name='Home' component={Home} options={{title:"My Jobs"}}/>
-          <Stack.Screen name='Job' component={Job} options={{title:"Job Details"}}/>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

@@ -5,14 +5,12 @@ export interface AuthState {
   isLoading:boolean,
   isAuthenticated:boolean,
   error:string,
-  user:string
 }
 
 const initialState: AuthState = {
     isLoading:false,
     isAuthenticated:false,
-    error:'',
-    user:''
+    error:''
 }
 
 export const authSlice = createSlice({
@@ -24,21 +22,53 @@ export const authSlice = createSlice({
       state.isAuthenticated = false,
       state.error = ''
     },
-    loginSuccess: (state,action: PayloadAction<string>) => {
+    loginSuccess: (state) => {
         state.isLoading = false,
         state.isAuthenticated = true,
         state.error = ''
-        state.user = action.payload
     },
     loginFailure: (state,action: PayloadAction<string>) => {
         state.isLoading = false,
         state.isAuthenticated = false,
         state.error = action.payload
-    }
+    },
+
+    registerRequest: (state) => {
+      state.isLoading = true,
+      state.isAuthenticated = false,
+      state.error = ''
+    },
+    registerSuccess: (state) => {
+        state.isLoading = false,
+        state.isAuthenticated = true,
+        state.error = ''
+    },
+    registerFailure: (state,action: PayloadAction<string>) => {
+        state.isLoading = false,
+        state.isAuthenticated = false,
+        state.error = action.payload
+    },
+
+    loadUserRequest: (state) => {
+      state.isLoading = true,
+      state.error = ''
+    },
+    loadUserSuccess: (state) => {
+      state.isLoading = false,
+      state.isAuthenticated = true,
+      state.error = ''
+    },
+    loadUserFailure: (state,action: PayloadAction<string>) => {
+      state.isLoading = false,
+      state.error = action.payload
+    },
+
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { loginRequest,loginSuccess,loginFailure } = authSlice.actions
+export const { loginRequest,loginSuccess,loginFailure,
+  loadUserRequest,loadUserSuccess,registerRequest,
+  registerSuccess,registerFailure,loadUserFailure } = authSlice.actions
 
 export default authSlice.reducer
