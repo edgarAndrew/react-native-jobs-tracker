@@ -66,6 +66,8 @@ const Register = ({navigation}:RegisterProps) => {
       if(isAxiosError(error)){
         if(error.response?.data.message)
           dispatch(registerFailure(error.response?.data.message))
+        else if(error.response?.data)
+          dispatch(registerFailure(error.response?.data))
         else
           dispatch(registerFailure(error.message))
       }

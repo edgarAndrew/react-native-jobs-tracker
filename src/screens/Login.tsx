@@ -23,6 +23,9 @@ const Login = ({navigation}: LoginProps) => {
 
   const checkJWTToken = async() =>{
     try{
+      const token = await AsyncStorage.getItem("token")
+      if(!token)
+        throw new Error()
       dispatch(loadUserRequest())
       const {data} = await axios.get("/jobs")
       dispatch(loadUserSuccess())
@@ -54,6 +57,13 @@ const Login = ({navigation}: LoginProps) => {
   },[isAuthenticated,error])
 
   const handleLogin = async() => {
+    if(!password || !email){
+      Snackbar.show({
+        text: "Fill all the fields !",
+        duration: Snackbar.LENGTH_SHORT,
+      })
+      return
+    }
     dispatch(loginRequest())
     try{
       const { data } = await axios.post(`/auth/login`, {email,password})
@@ -63,15 +73,15 @@ const Login = ({navigation}: LoginProps) => {
       
     }catch(error){
       if(isAxiosError(error)){
-        if(error.response?.data.message)
-          dispatch(loginFailure(error.response?.data.message))
+        if(error.response?.data.msg)
+          dispatch(loginFailure(error.response?.data.msg))
         else
           dispatch(loginFailure(error.message))
       }
     }
   };
   if(isLoading)
-    return <Loader loaderText='Authenticating'/>
+    return <Loader loaderText='Loading'/>
   else
     return (
     <View style={styles.container}>
