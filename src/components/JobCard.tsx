@@ -68,9 +68,7 @@ export default function JobCard(props:JobCardProps):JSX.Element {
                 </View>
             </View>
         </Modal>
-        <Modal isVisible={isUpdateModalVisible} animationInTiming={500} animationOutTiming={500} animationIn={"bounceInUp"} animationOut={"bounceOutDown"}>
-            <UpdateJob toggleUpdateModal={toggleUpdateModal} item={props}/>
-        </Modal>
+        <UpdateJob isVisible={isUpdateModalVisible} toggleUpdateModal={toggleUpdateModal} item={props}/>
         <View style={{...styles.cont2,marginBottom:13}}>
             <Text style={styles.companyText}>{props.company}</Text>
             <View style={styles.cont3}>
@@ -111,7 +109,7 @@ export default function JobCard(props:JobCardProps):JSX.Element {
 const styles = StyleSheet.create({
     container:{
         flex:1,
-        marginTop:30,
+        marginTop:20,
         elevation: 5,
         backgroundColor: "#ccffcc",
         borderRadius: 6,

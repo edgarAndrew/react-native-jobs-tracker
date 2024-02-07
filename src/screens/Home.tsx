@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, StyleSheet, Text, TouchableOpacity, View,ScrollView } from 'react-native'
 import React, { useEffect } from 'react'
 import axios,{isAxiosError} from "axios";
 import '../axios'
@@ -51,7 +51,7 @@ export default function Home({navigation}:HomeProps) {
     <View style={styles.screenContainer}>
       <Header/>
       <AddJob/>
-      <View style={{flex:1}}>
+      {/* <View style={{flex:1}}>
         {jobs.length==0 && <Text style={styles.emptyText}>No jobs being tracked</Text>}
         <FlatList 
           data={jobs}
@@ -60,7 +60,22 @@ export default function Home({navigation}:HomeProps) {
             <JobCard {...item}/>
           )}
         />
-      </View>
+      </View> */}
+
+      {/*NOTE to MYSELF: I know FlatList is better than scrollview but whats happening here is, for the udpate job
+        job modal to work properly, the entire job card must be fully visible (lazy rendering) or the update modal
+        closes as soon as you interact with text input. But Scrollview works fine as all job cards are
+        rendered together. Since the jobs for a user will be few, performance overhead will be negligible
+      */}
+
+       <ScrollView>
+          <View style={{ flex: 1 }}>
+            {jobs.length === 0 && <Text style={styles.emptyText}>No jobs being tracked</Text>}
+            {jobs.map(job => (
+              <JobCard key={job._id} {...job} />
+            ))}
+          </View>
+        </ScrollView>
     </View>
   )
 }
@@ -70,8 +85,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems:'center',
-    // padding: 16,
-    // paddingVertical:16,
     backgroundColor:"#e6ffe6"
   },
   emptyText:{

@@ -6,10 +6,12 @@ import axios,{isAxiosError} from "axios";
 import '../axios'
 import { Dropdown } from 'react-native-element-dropdown';
 import Snackbar from 'react-native-snackbar';
+import Modal from "react-native-modal";
 
 
 type UpdateJobProps = PropsWithChildren<{
     toggleUpdateModal:Function;
+    isVisible:boolean
     item:Job
 }>
 
@@ -69,7 +71,8 @@ export default function UpdateJob(props:UpdateJobProps) {
 
 
   return (
-    <View style={styles.modal}>
+    <Modal isVisible={props.isVisible} animationInTiming={500} animationOutTiming={500} animationIn={"bounceInUp"} animationOut={"bounceOutDown"}>
+        <View style={styles.modal}>
         <Text style={styles.headingText}>Update Job</Text>
         <View style={styles.cont2}>
             <View style={styles.cont3}>
@@ -108,7 +111,11 @@ export default function UpdateJob(props:UpdateJobProps) {
         <TouchableOpacity onPress={handleUpdate}>
             <Text style={styles.btnText}>Done</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={()=>props.toggleUpdateModal()}>
+            <Text style={styles.btnText}>Cancel</Text>
+        </TouchableOpacity>
     </View>
+    </Modal>
   )
 }
 
@@ -117,7 +124,7 @@ const styles = StyleSheet.create({
         alignItems:'center',
         justifyContent:'center',
         alignSelf:'center',
-        height:450,
+        height:500,
         width:350,
         backgroundColor:"#ecffcc",
         borderRadius:6
@@ -128,7 +135,7 @@ const styles = StyleSheet.create({
         textTransform:"uppercase",
         color:'#009688',
         marginHorizontal:24,
-        marginTop:22
+        marginTop:24
     },
     cont2:{
         marginVertical:18
