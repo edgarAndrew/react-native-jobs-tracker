@@ -86,7 +86,7 @@ const Login = ({navigation}: LoginProps) => {
     return (
     <View style={styles.container}>
         <View style={styles.cont}>
-          <Text style={styles.headerText}>Job Tracker</Text>
+          <Text style={styles.headerText}>JobPulse</Text>
             <View style={styles.cont2}>
               <TextInput
                   style={styles.input}
