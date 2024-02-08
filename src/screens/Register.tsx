@@ -10,6 +10,7 @@ import axios,{isAxiosError} from "axios";
 import '../axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
+import Loader from '../components/Loader';
 
 type RegisterProps = NativeStackScreenProps<RootStackParamList,'Register'>
 
@@ -73,8 +74,10 @@ const Register = ({navigation}:RegisterProps) => {
       }
     }
   };
-
-  return (
+  if(isLoading)
+    return <Loader loaderText='Loading'/>
+  else
+    return (
     <View style={styles.container}>
         <View style={styles.cont}>
           <Text style={styles.headerText}>JobPulse</Text>
